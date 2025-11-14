@@ -1,0 +1,18 @@
+{
+  "produtos": [
+    {
+      "id": 1,
+      "nome": "Charizard Holo",
+      "preco": 120,
+      "stock": 3,
+      "imagem": "img/charizard.jpeg"
+    },
+    {
+      "id": 2,
+      "nome": "Pikachu Base Holo",
+      "preco": 45,
+      "stock": 5,
+      "imagem": "img/pikachu.jpeg"
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<title>Painel Admin — Card Store Oficial</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body{background:#111;color:#fff;font-family:Arial;padding:18px;}
+  input,button,textarea{padding:8px;margin:6px 0;width:100%;box-sizing:border-box;}
+  .wrap{max-width:720px;margin:0 auto;}
+  h1,h2{color:#d4af37}
+  .row{display:flex;gap:8px;}
+  .half{flex:1}
+  pre{background:#0b0b0b;padding:12px;border-radius:8px;overflow:auto;color:#ddd}
+  .small{font-size:13px;color:#bbb}
+  .btn{background:#d4af37;color:#000;border:none;padding:10px;border-radius:8px;cursor:pointer;font-weight:700}
+  label{font-size:13px;color:#ddd}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Painel Admin — Card Store Oficial</h1>
+
+  <div id="loginBox">
+    <h2>Login</h2>
+    <input id="user" placeholder="Utilizador (ex: Admin.rafa22.loja)">
+    <input id="pass" type="password" placeholder="Password">
+    <button class="btn" onclick="login()">Entrar</button>
+    <p class="small">Se não te lembrares das credenciais, pede-me.</p>
+  </div>
+
+  <div id="panel" style="display:none;">
+    <h2>Adicionar / Editar Produto</h2>
+
+    <label>Nome</label>
+    <input id="nome" placeholder="Ex: Charizard Dourado">
+
+    <div class="row">
+      <div class="half">
+        <label>Preço (€)</label>
+        <input id="preco" type="number" step="0.01" placeholder="120.00">
+      </div>
+      <div class="half">
+        <label>Stock</label>
+        <input id="stock" type="number" placeholder="3">
+      </div>
+    </div>
+
+    <label>URL da Imagem</label>
+    <input id="imagem" placeholder="Ex: https://.../charizard.jpeg">
+
+    <button class="btn" onclick="addProduto()">Adicionar Produto</button>
+
+    <h2>Produtos (produtos.json)</h2>
+    <pre id="lista">A carregar...</pre>
+
+    <h2>Operações</h2>
+    <button onclick="forcarSalvar()" style="background:#333;color:#fff;padding:8px;border-radius:6px;border:none;">Forçar salvar produtos.json</button>
+    <p class="small">Nota: por limitações do Netlify o painel faz fetch e tenta PUT no ficheiro; em deploys estáticos podes editar manualmente o produtos.json no teu computador antes de enviar.</p>
+
+    <hr>
+    <p class="small">Contacto: rafaelafilipe22@gmail.com</p>
+    <button class="btn" onclick="logout()">Sair</button>
+  </div>
+</div>
+
+<script>
+/* === CREDENCIAIS === */
+const U = "Admin.rafa22.loja";
+const P = "Kyarafilipe2019";
+
+/* === UI refs (acesso directo a ids funciona no browser) === */
+const loginBox = document.getElementById('loginBox');
+const panel = document.getElementById('panel');
+const lista = document.getElementById('lista');
+const nome = document.getElementById('nome');
+const preco = document.getElementById('preco');
+const stock = document.getElementById('stock');
+const imagem = document.getElementById('imagem');
+
+/* === Login simples === */
+function login(){
+  if(document.getElementById('user').value === U && document.getElementById('pass').value === P){
+    loginBox.style.display = 'none';
+    panel.style.display = 'block';
+    load();
+  } else {
+    alert('Credenciais erradas');
+  }
+}
+
+/* === Load produtos.json e mostrar === */
+async function load(){
+  try {
+    const r = await fetch('produtos.json?_=' + Date.now());
+    if(!r.ok) throw new Error('Não foi possível carregar produtos.json');
+    const j = await r.json();
+    lista.textContent = JSON.stringify(j, null, 2);
+  } catch(e){
+    lista.textContent = 'Erro a carregar produtos.json — ' + e.message;
+  }
+}
+
+/* === Adicionar produto no objecto em memória e tentar gravar === */
+async function addProduto(){
+  try {
+    const r = await fetch('produtos.json');
+    const j = await r.json();
+    const novo = {
+      nome: (nome.value || '').trim(),
+      preco: Number(preco.value) || 0,
+      stock: Number(stock.value) || 0,
+      imagem: (imagem.value || '').trim()
+    };
+    if(!novo.nome) { alert('Preenche o nome'); return; }
+    j.produtos = j.produtos || [];
+    j.produtos.push(novo);
+
+    // tenta PUT (funciona apenas em ambientes que aceitem PUT no ficheiro)
+    try {
+      await fetch('produtos.json', { method: 'PUT', body: JSON.stringify(j) });
+      alert('Guardado (tentativa PUT enviada).');
+    } catch(err){
+      // fallback: mostra o JSON para copiares manualmente
+      alert('Não foi possível gravar diretamente no servidor. Copia o JSON mostrado e cola no ficheiro produtos.json localmente.');
+    }
+    load();
+  } catch(e){
+    alert('Erro: ' + e.message);
+  }
+}
+
+/* === Forçar salvar: apenas faz reload do conteúdo e mostra aviso se PUT não funcionar === */
+function forcarSalvar(){
+  alert('Se o PUT não funcionar no Netlify, edita manualmente o ficheiro produtos.json localmente antes de fazer upload.');
+}
+
+/* === Logout === */
+function logout(){
+  panel.style.display = 'none';
+  loginBox.style.display = 'block';
+  document.getElementById('user').value = '';
+  document.getElementById('pass').value = '';
+}
+</script>
+</body>
+</html>

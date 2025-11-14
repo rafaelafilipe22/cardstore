@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Card Store Oficial</title>
+<style>
+    body {
+        margin: 0;
+        background: #111;
+        color: #fff;
+        font-family: Arial;
+    }
+    h1 {
+        text-align: center;
+        margin-top: 20px;
+        color: #ffcc33;
+    }
+    .container {
+        width: 90%;
+        max-width: 1000px;
+        margin: auto;
+    }
+    .product {
+        background: #222;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    .card-image img {
+        width: 100%;
+        border-radius: 10px;
+    }
+    button {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border: none;
+        background: #ffcc33;
+        font-weight: bold;
+        color: #000;
+        cursor: pointer;
+    }
+    #carrinho {
+        background: #222;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>Card Store Oficial</h1>
+
+<div class="container">
+
+    <h2>Produtos</h2>
+    <div id="produtos"></div>
+
+    <div id="carrinho">
+        <h2>Carrinho</h2>
+        <p>O carrinho está vazio.</p>
+    </div>
+
+</div>
+
+<script>
+
+// ---------------------------
+// Render Loja
+// ---------------------------
+function renderLoja(lista) {
+    let area = document.getElementById("produtos");
+    area.innerHTML = "";
+
+    lista.forEach(p => {
+        area.innerHTML += `
+        <div class="product">
+            <div class="card-image">
+                <img src="${p.imagem}" alt="${p.nome}">
+            </div>
+            <h3>${p.nome}</h3>
+            <p>€${p.preco}</p>
+            <p>Stock: ${p.stock}</p>
+            <button onclick="adicionar(${p.id})">Comprar</button>
+        </div>`;
+    });
+}
+
+// ---------------------------
+// Carrinho
+// ---------------------------
+let carrinho = [];
+
+function adicionar(id) {
+    let item = carrinho.find(x => x.id === id);
+
+    if (!item) {
+        carrinho.push({ id: id, qty: 1 });
+    } else {
+        item.qty++;
+    }
+
+    atualizarCarrinho();
+}
+
+function atualizarCarrinho() {
+    let area = document.getElementById("carrinho");
+
+    if (carrinho.length === 0) {
+        area.innerHTML = `
+            <h2>Carrinho</h2>
+            <p>O carrinho está vazio.</p>
+        `;
+        return;
+    }
+
+    let html = "<h2>Carrinho</h2>";
+
+    carrinho.forEach(item => {
+        html += <p>Produto ID: ${item.id} — Quantidade: ${item.qty}</p>;
+    });
+
+    area.innerHTML = html;
+}
+
+// ---------------------------
+// Carregar JSON
+// ---------------------------
+fetch("produtos.json")
+    .then(res => res.json())
+    .then(data => {
+        renderLoja(data.produtos);
+    });
+
+</script>
+
+</body>
+</html>
